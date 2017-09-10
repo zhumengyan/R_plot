@@ -1,0 +1,61 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+<center><h1>图表嵌套-母子图</h1></center>
+参考<a href="https://zhuanlan.zhihu.com/p/27242202">杜雨</a>的文章
+目的是将两个做出来的相关图表<b><i><font color = #0099ff>重叠嵌套</font></i></b>!!
+
+实现方法：通过grid包中的<font color = "00ffff">viewport</font>函数来实现
+
+<h2>导入包，加载数据集</h2>
+```{r warning=FALSE}
+library(ggplot2)  ##绘制主图与附图
+library(grid)  ## 设定附图的长宽及其在主图的精确位置
+data("diamonds")
+head(diamonds)
+```
+<h2>绘制主图</h2>
+```{r}
+##theme中调整legend的相对位置与背景
+chart1<-ggplot(diamonds,aes(carat,price,colour=cut))+geom_point()+theme(legend.position=c(0.9,0.72),legend.background=element_rect(I(0)))
+chart1
+## 建立一块一定长宽的区域， x/y代表相对于主图x/y轴的相对位置
+vie<-viewport(width=0.669,height=0.4,x=0.7,y=0.306)
+```
+<h2>绘制附图</h2>
+```{r}
+q <- ggplot(data = diamonds, aes(depth, fill = cut, alpha = 0.2)) + geom_density() + xlim(54, 70)
+q
+q1 <- q + theme(axis.text.y = element_text(face = "bold", colour = "black"),
+                axis.title.y = element_blank(),
+                axis.text.x = element_text(face = "bold", colour = "black"),
+                plot.background = element_rect(I(0), linetype = 0),
+                panel.background = element_rect(I(0)),
+                panel.grid.major = element_line(colour = NA),
+                panel.grid.minor = element_line(color = NA),
+                legend.background = element_rect(I(0), linetype = 1),
+                legend.position = c(0.85, 0.72)
+                )
+q1
+```
+<h2>最后叠加</h2>
+```{r}
+##这一段代码不能分开
+chart1<-ggplot(diamonds,aes(carat,price,colour=cut))+geom_point()+theme(legend.position=c(0.9,0.72),legend.background=element_rect(I(0)))
+chart1
+vie<-viewport(width=0.669,height=0.4,x=0.7,y=0.306)
+chart2 <-ggplot(diamonds,aes(depth,fill=cut,alpha=.2))+geom_density()+xlim(54,70) +
+       theme(axis.text.y=element_text(face="bold",colour="black"),
+             axis.title.y=element_blank(),
+             axis.text.x=element_text(face="bold",colour="black"),
+             plot.background=element_rect(I(0),linetype=0),
+             panel.background=element_rect(I(0)),
+             panel.grid.major=element_line(colour=NA),
+             panel.grid.minor=element_line(colour=NA),
+             legend.background=element_rect(I(0),linetype=1),
+             legend.position=c(0.85,0.72))
+print(chart2,vp=vie)
+```
+
